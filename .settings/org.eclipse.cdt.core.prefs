@@ -1,0 +1,12 @@
+eclipse.preferences.version=1
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/CWD/delimiter=\:
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/CWD/operation=replace
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/CWD/value=/Users/zuba1/Documents/nrf52_SDK15/Raf_BOT_pilot/pca10040/s132/armgcc}/
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/PATH/delimiter=\:
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/PATH/operation=replace
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/PATH/value=/Users/zuba1/Library/gcc-arm-none-eabi-9-2019-q4-major/bin\:/Users/zuba1/Library/gcc-arm-none-eabi-9-2019-q4-major/bin\:/usr/local/Caskroom/gcc-arm-embedded/7-2017-q4-major/gcc-arm-none-eabi-7-2017-q4-major/bin\:/opt/local/bin\:/opt/local/sbin\:/usr/local/bin\:/usr/bin\:/bin\:/usr/sbin\:/sbin\:/Users/zuba1/Documents/nRF5x-Command-Line-Tools/nrfjprog\:/Users/zuba1/Documents/nRF5x-Command-Line-Tools/mergehex\:/opt/X11/bin
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/PWD/delimiter=\:
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/PWD/operation=replace
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/PWD/value=/Users/zuba1/Documents/nrf52_SDK15/Raf_BOT_pilot}/
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/append=true
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.167361520/appendContributed=true
