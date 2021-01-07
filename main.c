@@ -160,35 +160,22 @@ void app_ble_treminal(){
 
 
 #define BLE_REQUEST_NORESP_STAMP 300
-#define BLE_REQUEST_SLOW_STAMP	200
-#define BLE_REQUEST_QUICK_STAMP	100
+#define BLE_REQUEST_SLOW_STAMP	100
+#define BLE_REQUEST_QUICK_STAMP	50
 
 #define BLE_RESP_TOUT		1500
 
-//easy protocol
-//Byte0
-//-0xAC		--is a graphic pload -standard protocol
-//-0xA9		--is a downlink pload -standard protocol
-//-0xAB		--is a LOG pload
-
-//Byte1 -command
-//byte2 -is a mode bus
-//byte3 -etc...
-
 
 typedef enum{
-	CMD_NONE=0x00,				//none in this message
 
-	CMD_CLEAR_DISP_MEM=0x01,
+	//CMD_CLEAR_DISP_MEM=0x01,
 	CMD_FILL=0x02,
 
 	CMD_DRAW_LINE=0x03,
-	CMD_DRAW_BOX=0x04,
+	//CMD_DRAW_BOX=0x04,
 	CMD_DRAW_CIRCLE=0x05,
 
 	CMD_DRAW_TEXT=0x06,
-
-	CMD_DRAW_OPONENT_RING=0x07,
 
 	CMD_LEDS_MANAGE=0x08,
 
@@ -202,8 +189,6 @@ void app_ble_live(){
 	uint32_t _tasktime=getsystemtime()+BLE_REQUEST_SLOW_STAMP;
 	bledata_t _bledata;
 	uint8_t buttonstate=0;
-	int16_t deg=0;
-	uint16_t  dist=0;
 
 	while(1){
 
@@ -251,126 +236,78 @@ void app_ble_live(){
 
 			if(_bledata._data[0]==0xAC){ //graphic pload
 
-				switch(_bledata._data[1]){
+				if(_bledata._data[2]>3){
+					//is not empty message
+					uint8_t i=3;
+					uint8_t n=0;
 
-					case CMD_CLEAR_DISP_MEM: //quick clear display
-						 oled_clear();
-						break;
+					while(i<_bledata._data[2]){
 
-					case CMD_FILL:  //quick fill black operation
-						if(_bledata._data[3]){
-							ssd1306_fill_screen(WHITE);
-						}else{
-							ssd1306_fill_screen(BLACK);
+						n++;
+						if(n>16) break; //max 16 effects
+
+						switch(_bledata._data[i]){
+							case CMD_FILL:
+								ssd1306_fill_screen(_bledata._data[i+1]);
+								i+=2;
+								break;
+
+							case CMD_DRAW_LINE:
+								ssd1306_draw_line(_bledata._data[i+1],_bledata._data[i+2],_bledata._data[i+3],_bledata._data[i+4],_bledata._data[i+5]);
+								i+=6;
+								break;
+
+							case CMD_DRAW_CIRCLE:
+								if(_bledata._data[i+4]){
+									ssd1306_fill_circle(_bledata._data[i+1],_bledata._data[i+2],_bledata._data[i+3],_bledata._data[i+5]);
+								}else{
+									ssd1306_draw_circle(_bledata._data[i+1],_bledata._data[i+2],_bledata._data[i+3],_bledata._data[i+5]);
+								}
+								i+=6;
+								break;
+
+
+							case CMD_DRAW_TEXT:
+								text[0]=0;
+
+								 for(uint8_t z=0; z<_bledata._data[i+5];z++){
+										  text[z]=_bledata._data[6+i+z];
+										  text[z+1]=0x00;
+								 }
+
+								oled_print(text,_bledata._data[i+4],_bledata._data[i+3],_bledata._data[i+1],_bledata._data[i+2],0);
+
+								i+=7+_bledata._data[i+5];
+
+								break;
+
+							case CMD_LEDS_MANAGE:
+								if(_bledata._data[i+1]!=0){
+									set_led(_bledata._data[i+2],(_bledata._data[i+3]<<8)|_bledata._data[i+4],_bledata._data[i+1]);
+								}
+								i+=5;
+								break;
+
+							default:
+								i=255; //finish operation -find an error
+								break;
+
 						}
-						break;
-
-					case CMD_DRAW_LINE:
-
-						//_bledata._data[3] -x
-						//_bledata._data[4] -y
-						//_bledata._data[5] -x2
-						//_bledata._data[6] -y2
-						//_bledata._data[7] -collor
-
-
-						ssd1306_draw_line(_bledata._data[3],_bledata._data[4],
-								_bledata._data[5],_bledata._data[6],
-								_bledata._data[7]);
-
-						break;
-
-					case CMD_DRAW_BOX:
-
-						//_bledata._data[3] -x
-						//_bledata._data[4] -y
-						//_bledata._data[5] -w
-						//_bledata._data[6] -h
-						//_bledata._data[7] -collor
-						//_bledata._data[8] -fill?
-
-
-						if(_bledata._data[8]){
-							ssd1306_fill_rect(_bledata._data[3], _bledata._data[4],_bledata._data[5],_bledata._data[6],_bledata._data[7]);
-						}else{
-							ssd1306_draw_rect(_bledata._data[3], _bledata._data[4],_bledata._data[5],_bledata._data[6],_bledata._data[7]);
-						}
-
-						break;
-
-					case CMD_DRAW_CIRCLE:
-
-						//_bledata._data[3] -x
-						//_bledata._data[4] -y
-						//_bledata._data[5] -r
-						//_bledata._data[6] -collor
-						//_bledata._data[7] -fill?
-
-						if(_bledata._data[7]){
-							ssd1306_fill_circle(_bledata._data[3], _bledata._data[4],_bledata._data[5],_bledata._data[6]);
-						}else{
-							ssd1306_draw_circle(_bledata._data[3], _bledata._data[4],_bledata._data[5],_bledata._data[6]);
-						}
-
-						break;
-
-					case CMD_DRAW_TEXT:
-						//_bledata._data[3] -x
-						//_bledata._data[4] -y
-						//_bledata._data[5] -collor
-						//_bledata._data[6] -size
-						//_bledata._data[7] -len
-
-						text[0]=0;
-
-						 for(uint8_t i=0; i<_bledata._data[7];i++){
-						    	  text[i]=_bledata._data[8+i];
-						    	  text[i+1]=0x00;
-						 }
-
-						oled_print(text,_bledata._data[6],_bledata._data[5],_bledata._data[3],_bledata._data[4],0);
-						break;
-
-					case CMD_DRAW_OPONENT_RING:
-
-						//_bledata._data[3] -x
-						//_bledata._data[4] -y
-						//_bledata._data[5_h,6_l] -deg
-						//_bledata._data[7_h,8_l] -dis
-						deg=(_bledata._data[5]<<8)| _bledata._data[6];
-						dist=(_bledata._data[7]<<8)| _bledata._data[8];
-
-						oled_print_oponentring(_bledata._data[3],_bledata._data[4],deg,dist);
-						break;
-
-
-					case CMD_LEDS_MANAGE:
-						_bledata._data[2]=0; //to be sure
-
-						//_bledata._data[3] -led collor
-						//(_bledata._data[4]<<8)|_bledata._data[5] -led data
-						//_bledata._data[6] -led id -0 is reserved
-
-						if(_bledata._data[6]!=0){
-							set_led(_bledata._data[3],(_bledata._data[4]<<8)|_bledata._data[5],_bledata._data[6]);
-						}
-						break;
-
-					case CMD_NONE: //no break - just alive message
-					default:
-						break;
-
+					}
 				}
 
-				if(_bledata._data[2]& 0x01) ssd1306_display();
-				if(_bledata._data[2]& 0x02) ble_disonnect();
-				if(_bledata._data[2]& 0x04) {
+				if(_bledata._data[1]& 0x01) ssd1306_display();
+				if(_bledata._data[1]& 0x02) ble_disonnect();
+				if(_bledata._data[1]& 0x04) {
 					_tasktime=getsystemtime()+BLE_REQUEST_QUICK_STAMP;
 				}else{
 					_tasktime=getsystemtime()+BLE_REQUEST_SLOW_STAMP;
 
 				}
 
+				//clear meta data
+				_bledata._data[0]=0;
+				_bledata._data[1]=0;
 				_bledata._data[2]=0;
 
 			}

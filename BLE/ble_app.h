@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define BLE_MAX_DATA	22
+#define BLE_MAX_DATA	128
 
 
 typedef struct{
